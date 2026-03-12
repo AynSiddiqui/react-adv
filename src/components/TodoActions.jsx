@@ -1,4 +1,9 @@
-function TodoActions({ itemsLeft, statusSelected, onStatusChange, onClearCompleted }) {
+import { NavLink } from "react-router-dom";
+import { ACTIONS } from "../reducers/todosReducer";
+
+function TodoActions({ todos, dispatch }) {
+  const itemsLeft = todos.filter((todo) => !todo.completed).length;
+
   return (
     <div className="d-flex justify-content-between align-items-center p-3 flex-wrap border border-top-0">
 
@@ -7,17 +12,22 @@ function TodoActions({ itemsLeft, statusSelected, onStatusChange, onClearComplet
         <span className="text-secondary">{itemsLeft} items left</span>
       </div>
 
-      {/* Status filter */}
+      {/* Status filter as NavLinks */}
       <div className="d-flex gap-2 flex-wrap">
-        {["All", "Active", "Completed"].map((status) => (
-          <button
-            key={status}
-            type="button"
-            className={`btn btn-outline-primary btn-sm ${statusSelected === status ? "active" : ""}`}
-            onClick={() => onStatusChange(status)}
+        {[
+          { key: "All", label: "All", to: "/" },
+          { key: "Active", label: "Active", to: "/active" },
+          { key: "Completed", label: "Completed", to: "/completed" },
+        ].map(({ key, label, to }) => (
+          <NavLink
+            key={key}
+            to={to}
+            className={({ isActive }) =>
+              `btn btn-outline-primary btn-sm ${isActive ? "active" : ""}`
+            }
           >
-            {status}
-          </button>
+            {label}
+          </NavLink>
         ))}
       </div>
 
@@ -26,7 +36,7 @@ function TodoActions({ itemsLeft, statusSelected, onStatusChange, onClearComplet
         <button
           type="button"
           className="btn btn-link text-decoration-none p-0"
-          onClick={onClearCompleted}
+          onClick={() => dispatch({ type: ACTIONS.CLEAR_COMPLETED })}
         >
           Clear Completed
         </button>

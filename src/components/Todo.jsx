@@ -1,16 +1,9 @@
-import { useContext } from "react";
-import TodosContext from "../context/TodosContext";
+import { ACTIONS } from "../reducers/todosReducer";
 
 // generate each todo component which will be a for loop include a button to the left marking it as completed
-function Todo({ todos }) {
-
-    const { dispatch} = useContext(TodosContext);
-    const onToggle = (id) => {
-        dispatch({ type: 'TOGGLE_TODO', payload: id });
-    }
-    const handleDelete = (id)=>{
-        dispatch({ type: 'DELETE_TODO', payload: id });
-    }
+function Todo({ todos, dispatch }) {
+  const onToggle = (id) => dispatch({ type: ACTIONS.TOGGLE_TODO, payload: id });
+  const onDelete = (id) => dispatch({ type: ACTIONS.DELETE_TODO, payload: id });
 
   return (
     <div className="border border-top-0 border-bottom-0 bg-white text-secondary">
@@ -34,7 +27,7 @@ function Todo({ todos }) {
             <button
                 type="button"
                 className="btn btn-sm rounded-circle btn-outline-danger"
-                onClick={() => handleDelete(todo.id)}
+              onClick={() => onDelete(todo.id)}
                style={{ width: '2rem', height: '2rem', flexShrink: 0 }}
             >
                  X

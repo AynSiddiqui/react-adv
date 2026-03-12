@@ -1,8 +1,9 @@
-import { useEffect, useReducer, useState } from "react";
+import { useMemo, useReducer } from "react";
+import { Route, Routes } from "react-router-dom";
 import TodoHeader from "../components/TodoHeader";
 import Todo from "../components/Todo";
 import TodoActions from "../components/TodoActions";
-import { ACTIONS, todosReducer } from "../reducers/todosReducer";
+import { todosReducer } from "../reducers/todosReducer";
 
 const initialTodos = [
   {
@@ -12,55 +13,46 @@ const initialTodos = [
   },
 ];
 
-function Home() {
-  const [allTodos, dispatch] = useReducer(todosReducer, initialTodos);
-  const [filteredTodos, setFilteredTodos] = useState(initialTodos);
-  const [statusSelected, setStatusSelected] = useState("All");
+function TodoListSection({ allTodos, dispatch, statusSelected }) {
 
-  useEffect(() => {
-    const nextFilteredTodos = allTodos.filter((todo) => {
-      if (statusSelected === "Active") return !todo.completed;
-      if (statusSelected === "Completed") return todo.completed;
-      return true;
-    });
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setFilteredTodos(nextFilteredTodos);
-  }, [allTodos, statusSelected]);
+  const filteredTodos = useMemo(
+    () =>
+      allTodos.filter((todo) => {
+        if (statusSelected === "Active") return !todo.completed;
+        if (statusSelected === "Completed") return todo.completed;
+        return true;
+      }),
+    [allTodos, statusSelected]
+  );
 
-  function handleInputKeyDown(event) {
-    if (event.key === "Enter") {
-      const trimmedValue = event.target.value.trim();
-      if (trimmedValue) {
-        dispatch({ type: ACTIONS.ADD_TODO, payload: trimmedValue });
-        event.target.value = "";
-      }
-    }
-  }
+  if (allTodos.length === 0) return null;
 
   return (
-    <div className="container mt-5">
-      <TodoHeader
-        onKeyDown={handleInputKeyDown}
-        hasItems={allTodos.length > 0}
-        onCompleteAll={() => dispatch({ type: ACTIONS.COMPLETE_ALL })}
-      />
+    <>
+      <Todo todos={filteredTodos} dispatch={dispatch} />
+      <TodoActions todos={allTodos} dispatch={dispatch} />
+    </>
+  );
+}
 
-      {allTodos.length > 0 && (
-        <>
-          <Todo
-            todos={filteredTodos}
-            onToggle={(id) => dispatch({ type: ACTIONS.TOGGLE_TODO, payload: id })}
-            handleDelete={(id) => dispatch({ type: ACTIONS.DELETE_TODO, payload: id })}
+function Home() {
+  const [allTodos, dispatch] = useReducer(todosReducer, initialTodos);
+
+  return (
+    <>
+      <div className="container mt-5">
+        <TodoHeader dispatch={dispatch} />
+
+        <Routes>
+          <Route index element={<TodoListSection allTodos={allTodos} dispatch={dispatch} statusSelected="All" />} />
+          <Route path="active" element={<TodoListSection allTodos={allTodos} dispatch={dispatch} statusSelected="Active" />} />
+          <Route
+            path="completed"
+            element={<TodoListSection allTodos={allTodos} dispatch={dispatch} statusSelected="Completed" />}
           />
-          <TodoActions
-            itemsLeft={allTodos.filter((t) => !t.completed).length}
-            statusSelected={statusSelected}
-            onStatusChange={setStatusSelected}
-            onClearCompleted={() => dispatch({ type: ACTIONS.CLEAR_COMPLETED })}
-          />
-        </>
-      )}
-    </div>
+        </Routes>
+      </div>
+    </>
   );
 }
 
