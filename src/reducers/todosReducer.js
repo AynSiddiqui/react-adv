@@ -2,6 +2,7 @@ export const ACTIONS = {
   ADD_TODO: "ADD_TODO",
   TOGGLE_TODO: "TOGGLE_TODO",
   DELETE_TODO: "DELETE_TODO",
+  UPDATE_TODO: "UPDATE_TODO",
   COMPLETE_ALL: "COMPLETE_ALL",
   CLEAR_COMPLETED: "CLEAR_COMPLETED",
 };
@@ -25,6 +26,13 @@ export function todosReducer(todos, action) {
 
     case ACTIONS.DELETE_TODO:
       return todos.filter((todo) => todo.id !== action.payload);
+
+    case ACTIONS.UPDATE_TODO:
+      return todos.map((todo) =>
+        todo.id === action.payload.id
+          ? { ...todo, text: action.payload.text }
+          : todo
+      );
 
     case ACTIONS.COMPLETE_ALL: {
       const allCompleted = todos.every((todo) => todo.completed);

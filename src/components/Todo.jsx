@@ -1,9 +1,36 @@
+import { useState } from "react";
 import { ACTIONS } from "../reducers/todosReducer";
 
 // generate each todo component which will be a for loop include a button to the left marking it as completed
 function Todo({ todos, dispatch }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState("");
+
   const onToggle = (id) => dispatch({ type: ACTIONS.TOGGLE_TODO, payload: id });
   const onDelete = (id) => dispatch({ type: ACTIONS.DELETE_TODO, payload: id });
+
+  const startEditing = (todo) => {
+    setEditingId(todo.id);
+    setEditValue(todo.text);
+  };
+
+  const saveEdit = (id) => {
+    const trimmedValue = editValue.trim();
+    if (trimmedValue) {
+      dispatch({
+        type: ACTIONS.UPDATE_TODO,
+        payload: { id, text: trimmedValue },
+      });
+    }
+
+    setEditingId(null);
+    setEditValue("");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue("");
+  };
 
   return (
     <div className="border border-top-0 border-bottom-0 bg-white text-secondary">
@@ -17,12 +44,32 @@ function Todo({ todos, dispatch }) {
             style={{ width: '2rem', height: '2rem'}}
             aria-label="Toggle todo completion"
           />
-          <p
-            className={`flex-grow-1 mb-0 px-3 ${todo.completed ? 'text-decoration-line-through text-secondary' : ''}`}
-            style={{ minWidth: 0, overflowWrap: 'break-word', wordBreak: 'break-word' }}
-          >
-            {todo.text}
-          </p>
+          {editingId === todo.id ? (
+            <input
+              type="text"
+              className="form-control flex-grow-1 p-3"
+              value={editValue}
+              onChange={(event) => setEditValue(event.target.value)}
+              onBlur={() => saveEdit(todo.id)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  saveEdit(todo.id);
+                }
+                if (event.key === "Escape") {
+                  cancelEdit();
+                }
+              }}
+              autoFocus
+            />
+          ) : (
+            <p
+              className={`flex-grow-1 mb-0 px-3 ${todo.completed ? 'text-decoration-line-through text-secondary' : ''}`}
+              style={{ minWidth: 0, overflowWrap: 'break-word', wordBreak: 'break-word' }}
+              onDoubleClick={() => startEditing(todo)}
+            >
+              {todo.text}
+            </p>
+          )}
           {/* create delete button */}
             <button
                 type="button"
